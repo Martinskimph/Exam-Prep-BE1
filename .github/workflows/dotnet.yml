@@ -1,31 +1,32 @@
-name: Task 2
+name: CI
 
 on:
-  push:
-    branches: [ "main" ]
+  push:
+    branches:
+      - main
 
 jobs:
-  build-test:
-    runs-on: ubuntu-latest
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      IDEA_API_BASE: ${{ secrets.IDEA_API_BASE }}
+      IDEA_EMAIL: ${{ secrets.IDEA_EMAIL }}
+      IDEA_PASSWORD: ${{ secrets.IDEA_PASSWORD }}
 
-    env:
-      TEST_USER_EMAIL: "test@example.com"
-      TEST_USER_PASSWORD: "password"
-      BASE_URL: "http://localhost:5000"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup .NET
-    - uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x' # choose required SDK
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
+      - name: Build solution
+        run: dotnet build --no-restore --configuration Release
 
-    - name: Test
-      run: dotnet test --configuration Release --no-build
+      - name: Run tests
+        run: dotnet test --no-build --verbosity normal
